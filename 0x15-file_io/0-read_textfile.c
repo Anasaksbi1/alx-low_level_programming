@@ -1,58 +1,40 @@
 #include "main.h"
 
-/*
- * Task 0. Tread lightly, she is near
- */
-
 /**
- * read_textfile - Reads a text file and prints it
- * to the 'POSIX' standard output
+ * read_textfile - reads a text file and prints
+ * its contents to standard output.
  *
- * @filename: Name of the file to be read
- * @letters: Number of letters to be read and printed
+ * @filename: a pointer to a null-terminated string
+ * containing the name of the file to be read.
  *
- * Return: The number of letters read and printed, otherwise '0' if fail
+ * @letters: the maximum number of bytesto be read from the file.
+ *
+ * Return: if the function succeeds, its returns
+ * the number of bytes read from the file and printed to
+ * the standard output, if an error occurs, it returns 0.
  */
 
 ssize_t read_textfile(const char *filename, size_t letters)
 {
-	/* syscalls and memory declarations */
-	ssize_t file_write, file_read;
-	int file_open = open(filename, O_RDONLY);
-	char *buffer = malloc(letters);
+	ssize_t re, wr, op;
+	char *buffer;
 
-	/* In case the '*filename' is empty */
 	if (!filename)
 		return (0);
-	/* In case the 'filename' cannot be opened */
-	if (file_open == -1)
-		return (0);
-	/* In case allocated memory fail */
+	buffer = malloc(sizeof(char) * letters);
 	if (!buffer)
-	{
-		close(file_open);
 		return (0);
-	}
 
-	/* In case read file fail, free the memory and close file */
-	file_read = read(file_open, buffer, letters);
-	if (file_read == -1)
-	{
-		free(buffer);
-		close(file_open);
-		return (0);
-	}
+	op = open(filename, O_RDONLY);
+	re = read(op, buffer, letters);
+	wr = write(STDOUT_FILENO, buffer, re);
 
-	/* In case write action fail, free memory and close the file */
-	file_write = write(STDOUT_FILENO, buffer, file_read);
-	if (file_write == -1 || file_write != file_read)
+	if (op == -1 || re == -1 || wr == -1 || re != wr)
 	{
 		free(buffer);
-		close(file_open);
 		return (0);
 	}
-
 	free(buffer);
-	close(file_open);
-	return (file_write);
+	close(op);
+	return (wr);
 }
